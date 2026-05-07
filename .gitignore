@@ -214,3 +214,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+models/
+outputs/
+pai_dataset/
+output_stage1/
+output_stage2/

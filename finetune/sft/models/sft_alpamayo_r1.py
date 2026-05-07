@@ -58,6 +58,29 @@ class TrainableAlpamayoR1(AlpamayoR1):
         for key, value in param_count.items():
             logger.info(f"{key}: {value:,}")
 
+    def prepare_inputs_for_generation(
+        self,
+        input_ids: torch.Tensor,
+        past_key_values: Any | None = None,
+        attention_mask: torch.Tensor | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Prepare inputs for generation by delegating to the wrapped VLM when possible."""
+        if hasattr(self.vlm, "prepare_inputs_for_generation"):
+            return self.vlm.prepare_inputs_for_generation(
+                input_ids=input_ids,
+                past_key_values=past_key_values,
+                attention_mask=attention_mask,
+                **kwargs,
+            )
+
+        return {
+            "input_ids": input_ids,
+            "past_key_values": past_key_values,
+            "attention_mask": attention_mask,
+            **kwargs,
+        }
+
     def _process_traj_future_training(self, traj_data: dict[str, Any]) -> dict[str, Any]:
         """Process the trajectory future data for training."""
         ego_history_xyz = traj_data["ego_history_xyz"]

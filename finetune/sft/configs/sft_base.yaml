@@ -9,16 +9,16 @@ data:
   train_dataset:
     _recursive_: false
     _target_: alpamayo_r1.data.pai.PAIDataset
-    local_dir: ???
-    chunk_ids: "0-99"
+    local_dir: pai_dataset
+    chunk_ids: "0-3" # 複数チャンクの場合は"x-y"の形式で、単数の場合はxの形式で指定
     use_default_keyframe: true
     vla_preprocess_args:
       generation_mode: false
   val_dataset:
     _recursive_: false
     _target_: alpamayo_r1.data.pai.PAIDataset
-    local_dir: ???
-    chunk_ids: "99-100"
+    local_dir: pai_dataset
+    chunk_ids: "3-5" # 複数チャンクの場合は"x-y"の形式で、単数の場合はxの形式で指定
     use_default_keyframe: true
     vla_preprocess_args:
       generation_mode: true
@@ -65,3 +65,20 @@ trainer:
     use_reentrant: false # recommended by PyTorch for performance
 task_name: alpamayo_r1_sft
 run_name: ${task_name}_${now:%Y%m%d}_${now:%H%M%S}
+
+# LoRA configuration (optional, set use_lora=true to enable)
+lora:
+  use_lora: false
+  r: 16  # LoRA rank
+  lora_alpha: 32  # LoRA scaling factor
+  target_modules:
+    - "q_proj"
+    - "v_proj"
+    - "k_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  lora_dropout: 0.1
+  bias: "none"  # 'none', 'all', 'lora_only'
+  task_type: "CAUSAL_LM"

@@ -90,11 +90,22 @@ Example log lines:
 
 Stage 2 adds the trajectory diffusion expert and keeps the Stage-1 VLM frozen.
 
+If your Stage 1 run used LoRA, first merge the adapter into a full checkpoint:
+
+```bash
+python scripts/merge_stage1_lora.py \
+  --base-model-dir /path/to/Alpamayo-R1-10B \
+  --adapter-dir /path/to/stage1/output/checkpoint-114 \
+  --output-dir /path/to/stage1/merged_checkpoint
+```
+
+Then point Stage 2 at the merged checkpoint directory:
+
 ```
 torchrun --nproc_per_node 8 -m finetune.sft.train_hf --config-path pkg://finetune/sft/configs --config-name sft_stage2 model.pretrained_model_name_or_path=/path/to/Alpamayo-R1-10B model.stage1_vlm_checkpoint_path=/path/to/stage1/output/checkpoint-xxxx
 ```
 
-> model.pretrained_model_name_or_path must be the same local folder you used for Stage 1 (full base checkpoint on disk). model.stage1_vlm_checkpoint_path is your Stage 1 Trainer output, e.g. output_stage1/checkpoint-3500 (a directory containing model.safetensors.index.json and shards).
+> model.pretrained_model_name_or_path must be the same local folder you used for Stage 1 (full base checkpoint on disk). If Stage 1 used LoRA, model.stage1_vlm_checkpoint_path must be the merged checkpoint directory produced by the script above.
 
 You should see a loss curve similar to:
 

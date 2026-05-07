@@ -43,7 +43,14 @@ def train(cfg: DictConfig) -> None:
     training_args = TrainingArguments(**OmegaConf.to_container(cfg.trainer, resolve=True))
     logger.info("Configs:\n" + misc.pformat(OmegaConf.to_container(cfg, resolve=True)))
 
-    model = hyu.instantiate(cfg.model, _convert_="partial")
+    # Prepare LoRA kwargs if enabled
+    lora_kwargs = {}
+    if "lora" in cfg and cfg.lora.use_lora:
+        lora_kwargs["use_lora"] = True
+        lora_kwargs["lora_config"] = OmegaConf.to_container(cfg.lora, resolve=True)
+        del lora_kwargs["lora_config"]["use_lora"]
+
+    model = hyu.instantiate(cfg.model, _convert_="partial", **lora_kwargs)
 
     train_dataset = hyu.instantiate(
         cfg.data.train_dataset, _convert_="partial", model_config=model.config

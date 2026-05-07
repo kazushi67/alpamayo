@@ -24,6 +24,7 @@ import torch
 from transformers.utils import ModelOutput
 from hydra.utils import instantiate
 from safetensors.torch import load_file as load_safetensors_file
+from peft import get_peft_model, LoraConfig, TaskType
 
 from alpamayo_r1.models.base_model import (
     ReasoningVLA,
@@ -233,6 +234,26 @@ class TrainableReasoningVLA(ReasoningVLA, TrajectoryFusionWithFutureMixin):
         model = cls(config, pretrained_modules=pretrained_modules or None)
         model = load_alpamayo1_vlm(checkpoint_path, model)
 
+        # Apply LoRA if specified in kwargs
+        use_lora = kwargs.get("use_lora", False)
+        if use_lora:
+            lora_config_dict = kwargs.get("lora_config", {})
+            logger.info(f"Applying LoRA with config: {lora_config_dict}")
+            
+            lora_config = LoraConfig(
+                r=lora_config_dict.get("r", 16),
+                lora_alpha=lora_config_dict.get("lora_alpha", 32),
+                target_modules=lora_config_dict.get("target_modules", [
+                    "q_proj", "v_proj", "k_proj", "o_proj",
+                    "gate_proj", "up_proj", "down_proj"
+                ]),
+                lora_dropout=lora_config_dict.get("lora_dropout", 0.1),
+                bias=lora_config_dict.get("bias", "none"),
+                task_type=TaskType.CAUSAL_LM,
+            )
+            model = get_peft_model(model, lora_config)
+            logger.info(f"Model converted to LoRA: {model.print_trainable_parameters()}")
+
         return model
 
     def tie_weights(
@@ -268,6 +289,32 @@ class TrainableReasoningVLA(ReasoningVLA, TrajectoryFusionWithFutureMixin):
             raise ValueError(
                 f"{self.vlm.__class__.__name__} does not support gradient checkpointing."
             )
+
+    def prepare_inputs_for_generation(
+        self,
+        input_ids: torch.Tensor,
+        past_key_values=None,
+        attention_mask: torch.Tensor | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Prepare inputs for generation (inference).
+        
+        Delegates to the underlying VLM model if available.
+        """
+        if hasattr(self.vlm, "prepare_inputs_for_generation"):
+            return self.vlm.prepare_inputs_for_generation(
+                input_ids=input_ids,
+                past_key_values=past_key_values,
+                attention_mask=attention_mask,
+                **kwargs
+            )
+        else:
+            # Fallback: return minimal required inputs
+            return {
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+                **kwargs
+            }
 
     @torch._dynamo.disable
     def _compute_next_token_loss(

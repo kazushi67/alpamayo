@@ -1,6 +1,6 @@
 key: null
-team: ???
-project: ???
+team: fibonacci0112358
+project: alpamayo-sft
 group: ${run_name}
 name: ${run_name}
-output_dir: ${paths.output_dir}
+output_dir: sft_outputs/${run_name}
