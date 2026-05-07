@@ -68,7 +68,7 @@ run_name: ${task_name}_${now:%Y%m%d}_${now:%H%M%S}
 
 # LoRA configuration (optional, set use_lora=true to enable)
 lora:
-  use_lora: false
+  use_lora: true
   r: 16  # LoRA rank
   lora_alpha: 32  # LoRA scaling factor
   target_modules:
