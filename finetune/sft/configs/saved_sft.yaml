@@ -1,0 +1,26 @@
+# Entry point notes for the saved pt dataset workflow.
+#
+# Recommended configs:
+# - saved_sft_stage1.yaml: stage1 SFT on 206_dataset_ver1 with train/valid split
+# - saved_sft_stage2.yaml: stage2 SFT on 206_dataset_ver1 with train/valid split
+#
+# If you want to build a custom config, reuse:
+#   finetune.sft.data.saved_sft_adapter.SavedSFTAdapter
+# with `local_dir`, `file_start`, and `file_end`.
+
+data:
+  train_dataset:
+    _recursive_: false
+    _target_: finetune.sft.data.saved_sft_adapter.SavedSFTAdapter
+    local_dir: 206_dataset_ver1
+    file_start: 0
+    file_end: 60
+    use_default_keyframe: true
+  val_dataset:
+    _recursive_: false
+    _target_: finetune.sft.data.saved_sft_adapter.SavedSFTAdapter
+    local_dir: 206_dataset_ver1
+    file_start: 60
+    file_end: 76
+    use_default_keyframe: true
+

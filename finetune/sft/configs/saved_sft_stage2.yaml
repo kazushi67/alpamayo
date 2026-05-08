@@ -1,0 +1,39 @@
+defaults:
+  - sft_base
+  - /models/ar1_expert@model
+  - _self_
+
+# Stage 2 should load the merged Stage-1 VLM checkpoint here.
+# After running `scripts/merge_stage1_lora.py`, set this path to the merged output.
+model:
+  stage1_vlm_checkpoint_path: /path/to/stage1/merged_checkpoint
+
+data:
+  train_dataset:
+    _recursive_: false
+    _target_: finetune.sft.data.saved_sft_adapter.SavedSFTAdapter
+    local_dir: 206_dataset_ver1
+    file_start: 0
+    file_end: 60
+    use_default_keyframe: true
+  val_dataset:
+    _recursive_: false
+    _target_: finetune.sft.data.saved_sft_adapter.SavedSFTAdapter
+    local_dir: 206_dataset_ver1
+    file_start: 60
+    file_end: 76
+    use_default_keyframe: true
+
+trainer:
+  gradient_checkpointing: false
+  deepspeed: null
+  ddp_find_unused_parameters: true
+
+lora:
+  use_lora: false
+
+paths:
+  output_dir: output_stage2_saved
+
+evaluate:
+  eval_ckpt: null

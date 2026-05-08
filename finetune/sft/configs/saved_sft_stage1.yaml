@@ -1,0 +1,35 @@
+defaults:
+  - sft_base
+  - /models/ar1_base@model
+  - _self_
+
+data:
+  train_dataset:
+    _recursive_: false
+    _target_: finetune.sft.data.saved_sft_adapter.SavedSFTAdapter
+    local_dir: 206_dataset_ver1
+    file_start: 0
+    file_end: 60
+    use_default_keyframe: true
+  val_dataset:
+    _recursive_: false
+    _target_: finetune.sft.data.saved_sft_adapter.SavedSFTAdapter
+    local_dir: 206_dataset_ver1
+    file_start: 60
+    file_end: 76
+    use_default_keyframe: true
+
+trainer:
+  lr_multiplier:
+    vlm.model.visual: 0.1
+  ddp_find_unused_parameters: false
+  gradient_accumulation_steps: 1
+  learning_rate: 1e-5
+  warmup_steps: 500
+  deepspeed: null
+
+paths:
+  output_dir: output_stage1_saved
+
+evaluate:
+  eval_ckpt: null

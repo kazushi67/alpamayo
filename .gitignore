@@ -218,5 +218,6 @@ __marimo__/
 models/
 outputs/
 pai_dataset/
-output_stage1/
-output_stage2/
+output_stage1*/
+output_stage2*/
+206_dataset*/
